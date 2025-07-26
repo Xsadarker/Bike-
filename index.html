@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bike Rider Game</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #87ceeb;
+    }
+
+    #game {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      background: linear-gradient(to top, #4CAF50 80%, #87CEEB 20%);
+    }
+
+    #bike {
+      position: absolute;
+      bottom: 20px;
+      left: 50px;
+      width: 100px;
+      height: auto;
+      z-index: 2;
+    }
+
+    .obstacle {
+      position: absolute;
+      bottom: 20px;
+      width: 40px;
+      height: 40px;
+      background-color: brown;
+    }
+
+    #score {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 24px;
+      color: white;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <img id="bike" src="https://i.imgur.com/Z8P6sF6.png" alt="bike" />
+    <div id="score">Score: 0</div>
+  </div>
+
+  <script>
+    const bike = document.getElementById("bike");
+    const game = document.getElementById("game");
+    const scoreEl = document.getElementById("score");
+    let score = 0;
+    let jumping = false;
+    let velocity = 0;
+    let gravity = -1.5;
+    let bikeBottom = 20;
+
+    // Space to jump
+    document.addEventListener("keydown", function (e) {
+      if (e.code === "Space" && !jumping) {
+        velocity = 18;
+        jumping = true;
+      }
+    });
+
+    function gameLoop() {
+      requestAnimationFrame(gameLoop);
+
+      // Apply gravity and update bike position
+      velocity += gravity;
+      bikeBottom += velocity;
+      if (bikeBottom <= 20) {
+        bikeBottom = 20;
+        jumping = false;
+        velocity = 0;
+      }
+      bike.style.bottom = bikeBottom + "px";
+    }
+
+    function createObstacle() {
+      const obs = document.createElement("div");
+      obs.classList.add("obstacle");
+      obs.style.left = "100vw";
+      game.appendChild(obs);
+
+      let obsX = window.innerWidth;
+      const move = setInterval(() => {
+        obsX -= 6;
+        obs.style.left = obsX + "px";
+
+        const bikeRect = bike.getBoundingClientRect();
+        const obsRect = obs.getBoundingClientRect();
+
+        // Collision detection
+        if (
+          bikeRect.left < obsRect.right &&
+          bikeRect.right > obsRect.left &&
+          bikeRect.bottom > obsRect.top &&
+          bikeRect.top < obsRect.bottom
+        ) {
+          alert("Game Over! Score: " + score);
+          window.location.reload();
+        }
+
+        if (obsX < -50) {
+          clearInterval(move);
+          game.removeChild(obs);
+          score++;
+          scoreEl.textContent = "Score: " + score;
+        }
+      }, 20);
+    }
+
+    setInterval(createObstacle, 2000);
+    gameLoop();
+  </script>
+</body>
+</html>
